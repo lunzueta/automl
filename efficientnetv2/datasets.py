@@ -594,6 +594,194 @@ class CarsInput(CIFAR10Input):
               eval=dict(num_images=8_041, tfds_split='test', slice=''),
           )))
 
+class EyebrowsInput(ImageNetInput):
+  """Eyebrows input from tfds."""
+  cfg = copy.deepcopy(ImageNetInput.cfg)
+  cfg.update(
+      dict(
+          num_classes=3,
+          multiclass=False,
+          tfds_name='eyebrows',
+          splits=dict(
+              train=dict(num_images=586, tfds_split='train', slice=''),
+              minival=dict(num_images=147, tfds_split='val', slice=''),
+              eval=dict(num_images=147, tfds_split='val', slice=''),
+          )))
+
+  def preprocess(self, features):
+    """The preprocessing function."""
+    image = self.image_preprocessing(features['image'])
+    new_features = {'image': image}
+    if self.debug:
+      new_features['orig_image'] = features['image']
+    new_label = {'label': tf.one_hot(features['label'], self.cfg.num_classes)}
+    return new_features, new_label
+
+  def _input_fn(self, batch_size, current_host, num_hosts):
+    logging.info('use tfds: %s[%s]', self.cfg.tfds_name,
+                 self.cfg.splits[self.split]['tfds_split'])
+    ds = tfds.load(
+        self.cfg.tfds_name, data_dir=self.data_dir, download=False,
+        split=self.cfg.splits[self.split]['tfds_split'])
+    ds = ds.shard(num_hosts, current_host)
+    if self.is_training:
+      if self.cache:
+        ds = ds.cache().shuffle(4 * 16, seed=self.shuffle_seed).repeat()
+      else:
+        ds = ds.shuffle(self.shuffle_size_k * 4, seed=self.shuffle_seed)
+      ds = ds.repeat()
+
+    ds = ds.map(
+        self.preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    ds = ds.prefetch(1)
+
+    ds = ds.batch(batch_size, drop_remainder=True)
+    ds = ds.prefetch(1)
+
+    options = tf.data.Options()
+    options.experimental_optimization.autotune = True
+    return ds.with_options(options)
+
+class EyeInput(ImageNetInput):
+  """Eye input from tfds."""
+  cfg = copy.deepcopy(ImageNetInput.cfg)
+  cfg.update(
+      dict(
+          num_classes=4,
+          multiclass=False,
+          tfds_name='eye',
+          splits=dict(
+              train=dict(num_images=586, tfds_split='train', slice=''),
+              minival=dict(num_images=147, tfds_split='val', slice=''),
+              eval=dict(num_images=147, tfds_split='val', slice=''),
+          )))
+
+  def preprocess(self, features):
+    """The preprocessing function."""
+    image = self.image_preprocessing(features['image'])
+    new_features = {'image': image}
+    if self.debug:
+      new_features['orig_image'] = features['image']
+    new_label = {'label': tf.one_hot(features['label'], self.cfg.num_classes)}
+    return new_features, new_label
+
+  def _input_fn(self, batch_size, current_host, num_hosts):
+    logging.info('use tfds: %s[%s]', self.cfg.tfds_name,
+                 self.cfg.splits[self.split]['tfds_split'])
+    ds = tfds.load(
+        self.cfg.tfds_name, split=self.cfg.splits[self.split]['tfds_split'])
+    ds = ds.shard(num_hosts, current_host)
+    if self.is_training:
+      if self.cache:
+        ds = ds.cache().shuffle(4 * 16, seed=self.shuffle_seed).repeat()
+      else:
+        ds = ds.shuffle(self.shuffle_size_k * 4, seed=self.shuffle_seed)
+      ds = ds.repeat()
+
+    ds = ds.map(
+        self.preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    ds = ds.prefetch(1)
+
+    ds = ds.batch(batch_size, drop_remainder=True)
+    ds = ds.prefetch(1)
+
+    options = tf.data.Options()
+    options.experimental_optimization.autotune = True
+    return ds.with_options(options)
+
+class NoseInput(ImageNetInput):
+  """Nose input from tfds."""
+  cfg = copy.deepcopy(ImageNetInput.cfg)
+  cfg.update(
+      dict(
+          num_classes=2,
+          multiclass=False,
+          tfds_name='nose',
+          splits=dict(
+              train=dict(num_images=586, tfds_split='train', slice=''),
+              minival=dict(num_images=147, tfds_split='val', slice=''),
+              eval=dict(num_images=147, tfds_split='val', slice=''),
+          )))
+
+  def preprocess(self, features):
+    """The preprocessing function."""
+    image = self.image_preprocessing(features['image'])
+    new_features = {'image': image}
+    if self.debug:
+      new_features['orig_image'] = features['image']
+    new_label = {'label': tf.one_hot(features['label'], self.cfg.num_classes)}
+    return new_features, new_label
+
+  def _input_fn(self, batch_size, current_host, num_hosts):
+    logging.info('use tfds: %s[%s]', self.cfg.tfds_name,
+                 self.cfg.splits[self.split]['tfds_split'])
+    ds = tfds.load(
+        self.cfg.tfds_name, split=self.cfg.splits[self.split]['tfds_split'])
+    ds = ds.shard(num_hosts, current_host)
+    if self.is_training:
+      if self.cache:
+        ds = ds.cache().shuffle(4 * 16, seed=self.shuffle_seed).repeat()
+      else:
+        ds = ds.shuffle(self.shuffle_size_k * 4, seed=self.shuffle_seed)
+      ds = ds.repeat()
+
+    ds = ds.map(
+        self.preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    ds = ds.prefetch(1)
+
+    ds = ds.batch(batch_size, drop_remainder=True)
+    ds = ds.prefetch(1)
+
+    options = tf.data.Options()
+    options.experimental_optimization.autotune = True
+    return ds.with_options(options)
+
+class MouthInput(ImageNetInput):
+  """Mouth input from tfds."""
+  cfg = copy.deepcopy(ImageNetInput.cfg)
+  cfg.update(
+      dict(
+          num_classes=20,
+          multiclass=False,
+          tfds_name='mouth',
+          splits=dict(
+              train=dict(num_images=586, tfds_split='train', slice=''),
+              minival=dict(num_images=147, tfds_split='val', slice=''),
+              eval=dict(num_images=147, tfds_split='val', slice=''),
+          )))
+
+  def preprocess(self, features):
+    """The preprocessing function."""
+    image = self.image_preprocessing(features['image'])
+    new_features = {'image': image}
+    if self.debug:
+      new_features['orig_image'] = features['image']
+    new_label = {'label': tf.one_hot(features['label'], self.cfg.num_classes)}
+    return new_features, new_label
+
+  def _input_fn(self, batch_size, current_host, num_hosts):
+    logging.info('use tfds: %s[%s]', self.cfg.tfds_name,
+                 self.cfg.splits[self.split]['tfds_split'])
+    ds = tfds.load(
+        self.cfg.tfds_name, split=self.cfg.splits[self.split]['tfds_split'])
+    ds = ds.shard(num_hosts, current_host)
+    if self.is_training:
+      if self.cache:
+        ds = ds.cache().shuffle(4 * 16, seed=self.shuffle_seed).repeat()
+      else:
+        ds = ds.shuffle(self.shuffle_size_k * 4, seed=self.shuffle_seed)
+      ds = ds.repeat()
+
+    ds = ds.map(
+        self.preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    ds = ds.prefetch(1)
+
+    ds = ds.batch(batch_size, drop_remainder=True)
+    ds = ds.prefetch(1)
+
+    options = tf.data.Options()
+    options.experimental_optimization.autotune = True
+    return ds.with_options(options)
 
 class ImageNetTfdsInput(CIFAR10Input):
   """ImageNet TFDS input from tfds."""
@@ -621,6 +809,10 @@ def get_dataset_class(ds_name):
       'cifar100': CIFAR100Input,
       'flowers': FlowersInput,
       'cars': CarsInput,
+      'eyebrows': EyebrowsInput,
+      'eye': EyeInput,
+      'nose': NoseInput,
+      'mouth': MouthInput
   }[ds_name]
 
 
@@ -737,6 +929,129 @@ class CarsFt(Cifar10Ft):
   cfg = copy.deepcopy(Cifar10Ft.cfg)
   cfg.data.override(dict(ds_name='cars'))
 
+@ds_register
+class EyebrowsFt(ImageNet):
+  """Finetune eyebrows configs."""
+  # Finetune should have less regularization due to the limited training steps.
+  cfg = hparams.Config(
+      model=dict(
+          dropout_rate=0.000001,
+          survival_prob=0.8,
+      ),
+      train=dict(
+          batch_size=4,
+          stages=0,
+          epochs=15,
+          optimizer='rmsprop',
+          lr_sched='constant',
+          lr_base=0.0005,
+          lr_warmup_epoch=1,
+          ema_decay=0.9996,
+          weight_decay=1e-5,
+          label_smoothing=0.1,
+          min_steps=10000,
+          isize=1.0,
+      ),
+      data=dict(
+          ds_name='eyebrows',
+          augname='ft',
+          mixup_alpha=0,
+          cutmix_alpha=0,
+      ),
+  )
+
+@ds_register
+class EyeFt(ImageNet):
+  """Finetune eye configs."""
+  # Finetune should have less regularization due to the limited training steps.
+  cfg = hparams.Config(
+      model=dict(
+          dropout_rate=0.000001,
+          survival_prob=0.8,
+      ),
+      train=dict(
+          batch_size=4,
+          stages=0,
+          epochs=15,
+          optimizer='rmsprop',
+          lr_sched='constant',
+          lr_base=0.0005,
+          lr_warmup_epoch=1,
+          ema_decay=0.9996,
+          weight_decay=1e-5,
+          label_smoothing=0.1,
+          min_steps=10000,
+          isize=1.0,
+      ),
+      data=dict(
+          ds_name='eye',
+          augname='ft',
+          mixup_alpha=0,
+          cutmix_alpha=0,
+      ),
+  )
+
+@ds_register
+class NoseFt(ImageNet):
+  """Finetune nose configs."""
+  # Finetune should have less regularization due to the limited training steps.
+  cfg = hparams.Config(
+      model=dict(
+          dropout_rate=0.000001,
+          survival_prob=0.8,
+      ),
+      train=dict(
+          batch_size=4,
+          stages=0,
+          epochs=15,
+          optimizer='rmsprop',
+          lr_sched='constant',
+          lr_base=0.0005,
+          lr_warmup_epoch=1,
+          ema_decay=0.9996,
+          weight_decay=1e-5,
+          label_smoothing=0.1,
+          min_steps=10000,
+          isize=1.0,
+      ),
+      data=dict(
+          ds_name='nose',
+          augname='ft',
+          mixup_alpha=0,
+          cutmix_alpha=0,
+      ),
+  )
+
+@ds_register
+class MouthFt(ImageNet):
+  """Finetune mouth configs."""
+  # Finetune should have less regularization due to the limited training steps.
+  cfg = hparams.Config(
+      model=dict(
+          dropout_rate=0.000001,
+          survival_prob=0.8,
+      ),
+      train=dict(
+          batch_size=4,
+          stages=0,
+          epochs=15,
+          optimizer='rmsprop',
+          lr_sched='constant',
+          lr_base=0.0005,
+          lr_warmup_epoch=1,
+          ema_decay=0.9996,
+          weight_decay=1e-5,
+          label_smoothing=0.1,
+          min_steps=10000,
+          isize=1.0,
+      ),
+      data=dict(
+          ds_name='mouth',
+          augname='ft',
+          mixup_alpha=0,
+          cutmix_alpha=0,
+      ),
+  )
 
 ################################################################################
 def get_dataset_config(name, prefix='ds:'):

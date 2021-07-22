@@ -43,8 +43,8 @@ flags.DEFINE_string(
 
 FLAGS = flags.FLAGS
 
-TRAINING_SHARDS = 1024
-VALIDATION_SHARDS = 128
+TRAINING_SHARDS = 4
+VALIDATION_SHARDS = 4
 
 TRAINING_DIRECTORY = 'train'
 VALIDATION_DIRECTORY = 'val'
@@ -209,7 +209,6 @@ def _process_dataset(
                                chunk_synsets, labels)
     logging.info('Finished writing file: %s', output_file)
     files.append(output_file)
-  return files
 
 
 def convert_to_tf_records(
@@ -258,19 +257,16 @@ def convert_to_tf_records(
 
   # Create training data
   logging.info('Processing the training data.')
-  training_records = _process_dataset(
-      training_files, training_synsets, labels,
-      os.path.join(local_scratch_dir, TRAINING_DIRECTORY),
-      TRAINING_DIRECTORY, TRAINING_SHARDS)
+  _process_dataset(training_files, training_synsets, labels,
+    os.path.join(local_scratch_dir, TRAINING_DIRECTORY),
+    TRAINING_DIRECTORY, TRAINING_SHARDS)
 
   # Create validation data
   logging.info('Processing the validation data.')
-  validation_records = _process_dataset(
-      validation_files, validation_synsets, labels,
-      os.path.join(local_scratch_dir, VALIDATION_DIRECTORY),
-      VALIDATION_DIRECTORY, VALIDATION_SHARDS)
+  _process_dataset(validation_files, validation_synsets, labels,
+    os.path.join(local_scratch_dir, VALIDATION_DIRECTORY),
+    VALIDATION_DIRECTORY, VALIDATION_SHARDS)
 
-  return training_records, validation_records
 
 def run(raw_data_dir: str,
         local_scratch_dir: str):
@@ -284,9 +280,8 @@ def run(raw_data_dir: str,
         'Please, provide the `raw_data_dir`.')
 
   # Convert the raw data into tf-records
-  training_records, validation_records = convert_to_tf_records(
-      raw_data_dir=raw_data_dir,
-      local_scratch_dir=local_scratch_dir)
+  convert_to_tf_records(raw_data_dir=raw_data_dir,
+    local_scratch_dir=local_scratch_dir)
 
 
 def main(_):
