@@ -619,9 +619,9 @@ class EyebrowsInput(ImageNetInput):
           multiclass=False,
           tfds_name='eyebrows',
           splits=dict(
-              train=dict(num_images=586, tfds_split='train', slice=''),
-              minival=dict(num_images=147, tfds_split='val', slice=''),
-              eval=dict(num_images=147, tfds_split='val', slice=''),
+              train=dict(num_images=2498, tfds_split='train', slice=''),
+              minival=dict(num_images=302, tfds_split='val', slice=''),
+              eval=dict(num_images=302, tfds_split='val', slice=''),
           )))
 
   def preprocess(self, features):
@@ -637,14 +637,13 @@ class EyebrowsInput(ImageNetInput):
     logging.info('use tfds: %s[%s]', self.cfg.tfds_name,
                  self.cfg.splits[self.split]['tfds_split'])
     ds = tfds.load(
-        self.cfg.tfds_name, data_dir=self.data_dir, download=False,
-        split=self.cfg.splits[self.split]['tfds_split'])
+        self.cfg.tfds_name, split=self.cfg.splits[self.split]['tfds_split'])
     ds = ds.shard(num_hosts, current_host)
     if self.is_training:
       if self.cache:
-        ds = ds.cache().shuffle(4 * 16, seed=self.shuffle_seed).repeat()
+        ds = ds.cache().shuffle(1024 * 16, seed=self.shuffle_seed).repeat()
       else:
-        ds = ds.shuffle(self.shuffle_size_k * 4, seed=self.shuffle_seed)
+        ds = ds.shuffle(self.shuffle_size_k * 1024, seed=self.shuffle_seed)
       ds = ds.repeat()
 
     ds = ds.map(
@@ -952,7 +951,7 @@ class CarsFt(Cifar10Ft):
   cfg.data.override(dict(ds_name='cars'))
 
 @ds_register
-class EyebrowsFt(ImageNet):
+class Eyebrows(ImageNet):
   """Finetune eyebrows configs."""
   # Finetune should have less regularization due to the limited training steps.
   cfg = hparams.Config(
@@ -963,7 +962,7 @@ class EyebrowsFt(ImageNet):
       train=dict(
           batch_size=4,
           stages=0,
-          epochs=15,
+          epochs=250,
           optimizer='rmsprop',
           lr_sched='constant',
           lr_base=0.0005,
@@ -976,7 +975,7 @@ class EyebrowsFt(ImageNet):
       ),
       data=dict(
           ds_name='eyebrows',
-          augname='ft',
+          augname=None,
           mixup_alpha=0,
           cutmix_alpha=0,
       ),

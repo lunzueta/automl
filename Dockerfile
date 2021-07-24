@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow
+FROM tensorflow/tensorflow:2.4.2-gpu
 
 # Dependencies
 RUN apt-get update && apt-get install git -y

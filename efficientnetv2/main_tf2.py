@@ -32,6 +32,8 @@ import hparams
 import utils
 FLAGS = flags.FLAGS
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+
 
 def build_tf2_optimizer(learning_rate,
                         optimizer_name='rmsprop',
@@ -89,6 +91,7 @@ class TrainableModel(effnetv2_model.EffNetV2Model):
   def train_step(self, data):
     features, labels = data
     images, labels = features['image'], labels['label']
+    utils.image("train_imgs", images, False)
 
     with tf.GradientTape() as tape:
       pred = self(images, training=True)
@@ -105,6 +108,7 @@ class TrainableModel(effnetv2_model.EffNetV2Model):
   def test_step(self, data):
     features, labels = data
     images, labels = features['image'], labels['label']
+    utils.image("test_imgs", images, False)
     pred = self(images, training=False)
     pred = tf.cast(pred, tf.float32)
 
@@ -134,7 +138,9 @@ def main(_) -> None:
       tf.io.gfile.makedirs(FLAGS.model_dir)
     config.save_to_yaml(os.path.join(FLAGS.model_dir, 'config.yaml'))
 
+  is_tpu = False
   if strategy == 'tpu':
+    is_tpu = True
     tpu_cluster_resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
         FLAGS.tpu, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
     tf.config.experimental_connect_to_cluster(tpu_cluster_resolver)
@@ -209,10 +215,13 @@ def main(_) -> None:
     ckpt_callback = tf.keras.callbacks.ModelCheckpoint(
         os.path.join(FLAGS.model_dir, 'ckpt-{epoch:d}'),
         verbose=1,
-        save_weights_only=True)
+        save_weights_only=True,
+        period=10)
     tb_callback = tf.keras.callbacks.TensorBoard(
         log_dir=FLAGS.model_dir, update_freq=100)
     rstr_callback = utils.ReuableBackupAndRestore(backup_dir=FLAGS.model_dir)
+
+    tf.summary.create_file_writer(FLAGS.model_dir + '/imgs')
 
     def filter_callbacks(callbacks):
       if strategy == 'tpu' and not FLAGS.model_dir.startswith('gs://'):
