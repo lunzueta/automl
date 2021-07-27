@@ -25,6 +25,9 @@ import effnetv2_model
 import preprocessing
 import utils
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+
 FLAGS = flags.FLAGS
 
 
@@ -56,7 +59,7 @@ def build_tf2_model():
       FLAGS.model_name,
       FLAGS.hparam_str,
       include_top=True,
-      pretrained=FLAGS.model_dir or True)
+      weights=FLAGS.model_dir or True)
   model.summary()
   return model
 
@@ -92,6 +95,11 @@ def tf2_benchmark():
   isize = FLAGS.image_size or model.cfg.eval.isize
   if FLAGS.export_dir:
     tf.saved_model.save(model, FLAGS.export_dir)
+    converter = tf.lite.TFLiteConverter.from_saved_model(FLAGS.export_dir)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    lite_model_content = converter.convert()
+    with open(FLAGS.export_dir + "/model.tflite", "wb") as f:
+      f.write(lite_model_content)
     model = tf.saved_model.load(FLAGS.export_dir)
 
   batch_size = FLAGS.batch_size

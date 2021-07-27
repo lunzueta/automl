@@ -239,7 +239,7 @@ base_config = Config(
         depth_coefficient=None,
         width_coefficient=None,
         blocks_args=None,
-        num_classes=1000,  # must be the same as data.num_classes
+        num_classes=3,  # must be the same as data.num_classes
     ),
     # train related params.
     train=dict(

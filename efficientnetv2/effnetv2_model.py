@@ -669,7 +669,7 @@ def get_model(model_name,
     weights: One of None (random initialization),
       'imagenet' (pretrained on ImageNet),
       'imagenet21k' (pretrained on Imagenet21k),
-      'imagenet21k-ft1k' (pretrained on 21k and finetuned on 1k), 
+      'imagenet21k-ft1k' (pretrained on 21k and finetuned on 1k),
       'jft' (trained with non-labelled JFT-300),
       or the path to the weights file to be loaded. Defaults to 'imagenet'.
     training: If true, all model variables are trainable.
@@ -680,7 +680,7 @@ def get_model(model_name,
     A single tensor if with_endpoints if False; otherwise, a list of tensor.
   """
   net = EffNetV2Model(model_name, model_config, include_top, **kwargs)
-  net(tf.keras.Input(shape=(None, None, 3)),
+  net(tf.keras.Input(shape=(224, 224, 3)),
       training=training,
       with_endpoints=with_endpoints)
 

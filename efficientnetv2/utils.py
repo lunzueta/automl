@@ -349,7 +349,7 @@ def image(name, tensor, is_tpu=True):
   if is_tpu:
     tf.compat.v1.add_to_collection('image_summaries', Pair(name, tensor))
   else:
-    tf.summary.image(name, tensor)
+    tf.summary.image(name, tensor, max_outputs=25)
 
 
 def get_tpu_host_call(global_step, model_dir, iterations_per_loop):
